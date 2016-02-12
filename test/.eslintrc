@@ -12,9 +12,9 @@
 
     "env": {
         "browser": false,
-        "es6": false,
+        "es6": true,
         "amd": false,
-        "mocha": false,
+        "mocha": true,
         "node": true
     },
 

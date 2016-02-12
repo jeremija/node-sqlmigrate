@@ -1,5 +1,8 @@
 {
-  "name": "mysql-migrate",
+  "bin": {
+    "sqlmigrate": "./bin/sqlmigrate"
+  },
+  "name": "sqlmigrate",
   "version": "1.0.0",
   "description": "Helps with execution and tracking of plain-SQL migration scripts\"",
   "main": "lib.js",
@@ -8,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jeremija/node-mysql-migrate.git"
+    "url": "git+https://github.com/jeremija/node-sqlmigrate.git"
   },
   "keywords": [
     "migration",
@@ -19,18 +22,21 @@
   "author": "Jerko Steiner",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jeremija/node-mysql-migrate/issues"
+    "url": "https://github.com/jeremija/node-sqlmigrate/issues"
   },
-  "homepage": "https://github.com/jeremija/node-mysql-migrate#readme",
+  "homepage": "https://github.com/jeremija/node-sqlmigrate#readme",
   "peerDependencies": {
     "mysql": "^2.10.2"
   },
   "dependencies": {
     "bluebird": "^3.2.2",
     "debug": "^2.2.0",
+    "mkdirp": "^0.5.1",
     "sha1": "^1.1.1"
   },
   "devDependencies": {
-    "mocha": "^2.4.5"
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "mysql": "^2.10.2"
   }
 }

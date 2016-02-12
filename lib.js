@@ -1,25 +1,22 @@
 #!/usr/bin/env node
 'use strict';
-/*eslint no-process-exit: 0*/
-var Promise = require('bluebird');
-var config = require('config');
-var debug = require('debug')('mysql-migrate');
+var Bluebird = require('bluebird');
+var debug = require('debug')('sqlmigrate:debug');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var mysql = require('mysql');
 var path = require('path');
 var sha1 = require('sha1');
 
-
-
 var CRATE_MIGRATIONS_TABLE = [
   'create table if not exists migrations (',
-  '  id           bigint(20)   not null primary key auto_increment',
+  '  id           bigint(20)   not null primary key auto_increment,',
   '  name         varchar(255) not null,',
   '  date         datetime     not null,',
   '  sha1sum      varchar(40)  not null,',
   '  executedAt   timestamp    not null default current_timestamp',
   ');'
-].join('');
+].join('\n');
 
 var LOCK_FOR_MIGRATION = [
   'insert into migrations(id, name, date, sha1sum) values ',
@@ -65,7 +62,7 @@ function parseDate(name) {
 }
 
 /**
- * Creates a new migration instance.
+ * Creates a new migrator instance.
  * @param {Object} options                    configuration parameters
  * @param {String} [migrationsDir=migrations] directory to look for and store
  *                                            migration SQL scripts
@@ -73,12 +70,13 @@ function parseDate(name) {
  *                                            `createConnection` function
  */
 function create(options) {
-  options = options || {};
+  options.dbConfig.multipleStatements = true;
   var migrationsDir = options.migrationsDir || path.join('migrations');
   var dbConfig = options.dbConfig;
-  dbConfig.multipleStatements = true;
 
-  function create(name) {
+  mkdirp.sync(migrationsDir);
+
+  function createMigration(name) {
     name = name || 'unnamed';
     var date = formatDate(new Date());
     var file = path.join(migrationsDir, date + '-' + name + '.sql');
@@ -90,7 +88,7 @@ function create(options) {
     try {
       var date = parseDate(filename);
     } catch (err) {
-      throw new Error('Error parsing date from filename', err);
+      throw new Error('error parsing date from filename', err);
     }
     var content = fs.readFileSync(path.join(migrationsDir, filename), 'utf-8');
     var sha1sum = sha1(content);
@@ -116,15 +114,11 @@ function create(options) {
   }
 
   function _filterMigrations(allExecuted, allFiles) {
-    if (allExecuted.length > allFiles.length) {
-      throw new Error('more migration records in database than there is files');
-    }
-
     allExecuted.forEach(function(executed, i) {
       var file = allFiles[i];
       if (!file) throw new Error('file ' + executed.name + ' not found');
 
-      if (executed.name !== file.name) {
+      if (executed.name !== (file && file.name)) {
         throw new Error(
           'migration names do not match - ' + executed.name + ' vs ' + file.name
         );
@@ -139,7 +133,7 @@ function create(options) {
   }
 
   function migrate(max) {
-    var conn = Promise.promisifyAll(mysql.createConnection(dbConfig));
+    var conn = Bluebird.promisifyAll(mysql.createConnection(dbConfig));
 
     var migrationStarted = false;
     return conn.connectAsync()
@@ -162,9 +156,11 @@ function create(options) {
       return _filterMigrations(allExecuted, allFiles).slice(0, max);
     })
     .then(function(filesToBeExecuted) {
+      var status = [];
       debug('will exec: %s', filesToBeExecuted.length);
       if (filesToBeExecuted.length === 0) return;
       return filesToBeExecuted.reduce(function(promise, file) {
+        status.push(file);
         return promise.then(function() {
           debug('migrating: %s', file.name);
           return conn.queryAsync(file.content);
@@ -174,10 +170,7 @@ function create(options) {
             file.name, file.date, file.sha1sum
           ]);
         });
-      }, Promise.resolve());
-    })
-    .catch(function(err) {
-      console.error('error:    ', err.message);
+      }, Bluebird.resolve());
     })
     .finally(function() {
       if (migrationStarted) return conn.queryAsync(UNLOCK_AFTER_MIGRATION);
@@ -188,7 +181,7 @@ function create(options) {
   }
 
   return {
-    create: create,
+    createMigration: createMigration,
     migrate: migrate
   };
 }

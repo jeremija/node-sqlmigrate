@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+if (!process.env.DEBUG) process.env.DEBUG = 'sqlmigrate:*';
+
+var error = require('debug')('sqlmigrate:error');
+var lib = require('../lib.js');
+var path = require('path');
+
+function start(args) {
+  try {
+    var config = require(path.join(process.cwd(), '.sqlmigrate'));
+  } catch (err) {
+    error('no `.sqlmigrate` file found in working directory');
+    process.exit(1);
+  }
+  var sqlmigrate = lib.create(config);
+
+  if (args[0] === 'create') {
+    var name = args[1];
+    sqlmigrate.createMigration(name);
+    return;
+  }
+
+  var errors = 0;
+  sqlmigrate.migrate(args[0])
+  .catch(function(err) {
+    errors = 1;
+    error('an error occurred during the migration process');
+    error(err.stack);
+  })
+  .finally(function() {
+    setTimeout(function() {
+      process.exit(errors);
+    });
+  });
+}
+
+var args = process.argv.slice(2);
+start(args);
+
