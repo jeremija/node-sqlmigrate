@@ -3,7 +3,7 @@
     "sqlmigrate": "./bin/sqlmigrate"
   },
   "name": "sqlmigrate",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Helps automating MySQL migrations written in plain .sql scripts.",
   "main": "lib.js",
   "scripts": {
