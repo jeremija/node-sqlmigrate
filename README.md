@@ -10,7 +10,7 @@ Helps automating MySQL migrations written in plain `.sql` scripts.
 require('sqlmigrate').create({
   migrationsDir: 'db/migrations',
   dbConfig: {
-    database: 'mysql_migrate',
+    database: 'sqlmigrate_test',
     host: '127.0.0.1',
     port: 3306,
     user: 'travis',

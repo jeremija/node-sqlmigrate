@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DB_NAME=mysql_migrate
+DB_NAME=sqlmigrate_test
 DB_USER=travis
 
 mysql -u root <<EOF

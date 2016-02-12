@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - "5.2.0"
+script: make coverage
+env:
+services:
+  - mysql
+before_script:
+  - mysql -e 'create database sqlmigrate_test;'
+notifications:
+  email: false
