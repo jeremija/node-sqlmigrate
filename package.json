@@ -4,7 +4,7 @@
   },
   "name": "sqlmigrate",
   "version": "1.0.0",
-  "description": "Helps with execution and tracking of plain-SQL migration scripts\"",
+  "description": "Helps automating MySQL migrations written in plain .sql scripts.",
   "main": "lib.js",
   "scripts": {
     "test": "npm test"

@@ -1,6 +1,6 @@
 # mysql-migrate
 
-Helps automating plain SQL migration scripts for MySQL.
+Helps automating MySQL migrations written in plain `.sql` scripts.
 
 # usage
 
