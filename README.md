@@ -1,4 +1,4 @@
-# mysql-migrate
+# sqlmigrate
 
 Helps automating MySQL migrations written in plain `.sql` scripts.
 
@@ -7,7 +7,7 @@ Helps automating MySQL migrations written in plain `.sql` scripts.
 ## library
 
 ```javascript
-require('mysql-migrate').create({
+require('sqlmigrate').create({
   migrationsDir: 'db/migrations',
   dbConfig: {
     database: 'mysql_migrate',
@@ -26,7 +26,7 @@ require('mysql-migrate').create({
 current working directory named `.sqlmigrate`.
 
 ```bash
-npm install mysql-migrate
+npm install sqlmigrate
 
 # create a new migration script
 sqlmigrate create 'new-migration'
