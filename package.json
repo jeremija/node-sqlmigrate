@@ -1,0 +1,36 @@
+{
+  "name": "mysql-migrate",
+  "version": "1.0.0",
+  "description": "Helps with execution and tracking of plain-SQL migration scripts\"",
+  "main": "lib.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeremija/node-mysql-migrate.git"
+  },
+  "keywords": [
+    "migration",
+    "node",
+    "mysql",
+    "sql"
+  ],
+  "author": "Jerko Steiner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jeremija/node-mysql-migrate/issues"
+  },
+  "homepage": "https://github.com/jeremija/node-mysql-migrate#readme",
+  "peerDependencies": {
+    "mysql": "^2.10.2"
+  },
+  "dependencies": {
+    "bluebird": "^3.2.2",
+    "debug": "^2.2.0",
+    "sha1": "^1.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.5"
+  }
+}
