@@ -20,6 +20,25 @@ require('sqlmigrate').create({
 .migrate();
 ```
 
+## Example Javascript file for .sqlmigrate
+
+```javascript
+function start() {
+  return {
+    migrationsDir: 'src/db/migrations',
+    dbConfig: {
+      database: 'dbName',
+      host: '127.0.0.1',
+      port: '3306',
+      user: 'user',
+      password: 'password'
+    }
+  };
+}
+
+module.exports = start();
+```
+
 ## cli
 
 `sqlmigrate` script will attempt to read the json or node module from the
