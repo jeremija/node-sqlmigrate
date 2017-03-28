@@ -4,7 +4,7 @@ Helps automating MySQL migrations written in plain `.sql` scripts.
 
 # usage
 
-## library
+## as a library
 
 ```javascript
 require('sqlmigrate').create({
@@ -20,29 +20,24 @@ require('sqlmigrate').create({
 .migrate();
 ```
 
-## Example Javascript file for .sqlmigrate
+## as a cli utility
+
+`sqlmigrate` script will attempt to read the config file from the current
+working directory named `.sqlmigrate`:
 
 ```javascript
-function start() {
-  return {
-    migrationsDir: 'src/db/migrations',
-    dbConfig: {
-      database: 'dbName',
-      host: '127.0.0.1',
-      port: '3306',
-      user: 'user',
-      password: 'password'
-    }
-  };
-}
-
-module.exports = start();
+// .sqlmigrate example
+module.exports = {
+  migrationsDir: 'src/db/migrations',
+  dbConfig: {
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS
+  }
+};
 ```
-
-## cli
-
-`sqlmigrate` script will attempt to read the json or node module from the
-current working directory named `.sqlmigrate`.
 
 ```bash
 npm install sqlmigrate
