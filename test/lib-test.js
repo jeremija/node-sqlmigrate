@@ -199,5 +199,25 @@ describe('lib', () => {
         done();
       });
     });
+
+    it('fails when invalid db configuration', done => {
+      lib.create({
+        dbConfig: {
+          database: 'sqlmigrate_test_invalid',
+          host: '127.0.0.1',
+          port: 3306,
+          user: 'travis_invalid',
+          password: ''
+        },
+        migrationsDir: path.join(__dirname, 'migrations')
+      })
+      .migrate()
+      .asCallback(err => {
+        expect(err).to.be.ok;
+        expect(err).to.match(/access denied/i);
+        done();
+      });
+    });
+
   });
 });

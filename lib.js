@@ -176,7 +176,9 @@ function create(options) {
       if (migrationStarted) return conn.queryAsync(UNLOCK_AFTER_MIGRATION);
     })
     .finally(function() {
-      return conn.endAsync();
+      if (conn.state !== 'disconnected') {
+        return conn.endAsync();
+      }
     });
   }
 
