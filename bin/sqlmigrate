@@ -6,10 +6,28 @@ var lib = require('../lib.js');
 var path = require('path');
 
 function start(args) {
+  if (args[0] === 'help' || args[0] === '--help') {
+    console.error('Usage: sqlmigrate [command]');
+    console.error('');
+    console.error('Migration will be performed when no command is specified.');
+    console.error('');
+    console.error('The default command accepts the following optional args:');
+    console.error('');
+    console.error('  --max=n      max number of migrations to perform');
+    console.error('  --any-order  do not fail if there are new migrations');
+    console.error('               created before the last executed migration');
+    console.error('');
+    console.error('Commands:');
+    console.error('  create       creates a migration');
+    console.error('  help         prints this help');
+    return;
+  }
+
   try {
     var config = require(path.join(process.cwd(), '.sqlmigrate'));
   } catch (err) {
-    error('no `.sqlmigrate` file found in working directory');
+    error('error reading configuration file');
+    error(err.stack);
     process.exit(1);
   }
   var sqlmigrate = lib.create(config);
@@ -20,8 +38,16 @@ function start(args) {
     return;
   }
 
+  var parsedArgs = args.reduce(function(obj, arg) {
+    arg = arg.split('=');
+    var key = arg[0];
+    var value = arg[1];
+    key = key.replace(/^--/, '');
+    obj[key] = value;
+  }, {});
+
   var errors = 0;
-  sqlmigrate.migrate(args[0])
+  sqlmigrate.migrate(parsedArgs.max, 'any-order' in parsedArgs)
   .catch(function(err) {
     errors = 1;
     error('an error occurred during the migration process');

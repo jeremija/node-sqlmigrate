@@ -58,7 +58,8 @@ describe('lib', () => {
       expect(files.length).to.equal(1);
       expect(files[0]).to.match(/^[0-9]{14}-my-migration.sql$/);
 
-      var content = fs.readFileSync(path.join(migrationsDir, files[0]), 'utf-8');
+      var content = fs
+      .readFileSync(path.join(migrationsDir, files[0]), 'utf-8');
       expect(content).to.equal('-- migration script --');
     });
 
@@ -69,7 +70,8 @@ describe('lib', () => {
       expect(files.length).to.equal(1);
       expect(files[0]).to.match(/^[0-9]{14}-unnamed.sql$/);
 
-      var content = fs.readFileSync(path.join(migrationsDir, files[0]), 'utf-8');
+      var content = fs
+      .readFileSync(path.join(migrationsDir, files[0]), 'utf-8');
       expect(content).to.equal('-- migration script --');
     });
 
@@ -151,53 +153,91 @@ describe('lib', () => {
       });
     }
 
-    it('should validate filenames', done => {
-      return migrator.migrate()
-      .then(() => createMigrator('migrations-invalid-filename').migrate())
-      .asCallback(err => {
-        expect(err).to.be.ok;
-        expect(err.message).to.equal(
-          'error parsing date from filename'
-        );
-        done();
+    [
+      [],
+      [undefined, true]
+    ]
+    .forEach(args => {
+      const strArgs = JSON.stringify(args)
+      .replace(/^\[/, '')
+      .replace(/\]$/, '');
+
+      describe(`args: migrate(${strArgs})`, () => {
+
+        it('should validate filenames', done => {
+          return migrator.migrate.apply(migrator, args)
+          .then(() => {
+            const m = createMigrator('migrations-invalid-filename');
+            return m.migrate.apply(m, args);
+          })
+          .asCallback(err => {
+            expect(err).to.be.ok;
+            expect(err.message).to.equal(
+              'error parsing date from filename'
+            );
+            done();
+          });
+        });
+
+        it('should verify migration checksums', done => {
+          return migrator.migrate()
+          .then(() => {
+            const m = createMigrator('migrations-invalid-checksums');
+            return m.migrate.apply(m, args);
+          })
+          .asCallback(err => {
+            expect(err).to.be.ok;
+            expect(err.message).to.equal(
+              'sha1sum mismatch for file: 20160212070000-migration2.sql'
+            );
+            done();
+          });
+        });
+
+        it('should verify migration order', done => {
+          return migrator.migrate.apply(migrator, args)
+          .then(() => {
+            const m = createMigrator('migrations-invalid-order');
+            return m.migrate.apply(m, args);
+          })
+          .asCallback(err => {
+            expect(err).to.be.ok;
+            expect(err.message).to.equal(
+              'file 20160212080000-migration3.sql not found'
+            );
+            done();
+          });
+        });
+
+        it('should verify migration names', done => {
+          return migrator.migrate()
+          .then(() => {
+            const m = createMigrator('migrations-invalid-names');
+            return m.migrate.apply(m, args);
+          })
+          .asCallback(err => {
+            expect(err).to.be.ok;
+            expect(err.message).to.match(/20160212070000-migration2\.sql/);
+            done();
+          });
+        });
+
       });
+
     });
 
-    it('should verify migration order', done => {
-      return migrator.migrate()
-      .then(() => createMigrator('migrations-invalid-order').migrate())
-      .asCallback(err => {
-        expect(err).to.be.ok;
-        expect(err.message).to.equal(
-          'file 20160212080000-migration3.sql not found'
-        );
-        done();
-      });
-    });
+    describe('extra tests args: migrate(null, true)', () => {
 
-    it('should verify migration names', done => {
-      return migrator.migrate()
-      .then(() => createMigrator('migrations-invalid-names').migrate())
-      .asCallback(err => {
-        expect(err).to.be.ok;
-        expect(err.message).to.equal([
-          'migration names do not match - 20160212070000-migration2.sql ',
-          'vs 20160212070000-migration4.sql'
-        ].join(''));
-        done();
+      it('should exuecte migrations even if out of order', () => {
+        return createMigrator('migrations-unordered-1')
+        .migrate(undefined, true)
+        .then(() =>
+          createMigrator('migrations-unordered-2').migrate(undefined, true)
+        )
+        .then(() => conn.queryAsync('select * from migrations'))
+        .then(migrations => expect(migrations.length).to.equal(3));
       });
-    });
 
-    it('should verify migration checksums', done => {
-      return migrator.migrate()
-      .then(() => createMigrator('migrations-invalid-checksums').migrate())
-      .asCallback(err => {
-        expect(err).to.be.ok;
-        expect(err.message).to.equal(
-          'sha1sum mismatch for file: 20160212070000-migration2.sql'
-        );
-        done();
-      });
     });
 
     it('fails when invalid db configuration', done => {

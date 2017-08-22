@@ -113,10 +113,31 @@ function create(options) {
     });
   }
 
-  function _filterMigrations(allExecuted, allFiles) {
+  function _filterMigrationsIgnoreOrder(allExecuted, allFiles) {
+    var allFilesByFilename = allFiles.reduce(function(obj, file) {
+      obj[file.name] = file;
+      return obj;
+    }, {});
+
+    allExecuted.forEach(function(executed) {
+      var file = allFilesByFilename[executed.name];
+      delete allFilesByFilename[executed.name];
+
+      _validateFileExists(executed, file);
+      _validateChecksum(executed, file);
+    });
+
+    return Object
+    .keys(allFilesByFilename)
+    .map(function(name) {
+      return allFilesByFilename[name];
+    });
+  }
+
+  function _filterMigrationsInOrder(allExecuted, allFiles) {
     allExecuted.forEach(function(executed, i) {
       var file = allFiles[i];
-      if (!file) throw new Error('file ' + executed.name + ' not found');
+      _validateFileExists(executed, file);
 
       if (executed.name !== (file && file.name)) {
         throw new Error(
@@ -124,15 +145,43 @@ function create(options) {
         );
       }
 
-      if (executed.sha1sum !== file.sha1sum) {
-        throw new Error('sha1sum mismatch for file: ' + file.name);
-      }
+      _validateChecksum(executed, file);
     });
 
     return allFiles.slice(allExecuted.length);
   }
 
-  function migrate(max) {
+  function _filterMigrations(allExecuted, allFiles, anyOrder) {
+    if (anyOrder) {
+      return _filterMigrationsIgnoreOrder(allExecuted, allFiles);
+    }
+    return _filterMigrationsInOrder(allExecuted, allFiles);
+  }
+
+  function _validateFileExists(executed, file) {
+    if (!file) {
+      throw new Error('file ' + executed.name + ' not found');
+    }
+  }
+
+  function _validateChecksum(executed, file) {
+    if (executed.sha1sum !== file.sha1sum) {
+      throw new Error('sha1sum mismatch for file: ' + file.name);
+    }
+  }
+
+  /**
+   * @param {Number}  [max=undefined]  Number of migrations to perform
+   * @param {Boolean} [anyOrder=false] Whether or not to perform the migrations
+   * in any order. Default is false, which means migrations will be performed
+   * in order, and if there were any migrations in between that haven't been
+   * executed yet, the script will fail. When set to `true`, this order will be
+   * ignored. The migrations will still be executed sequentially, ordered by
+   * filename. This is useful when multiple developers are working on the same
+   * project and the migrations they create have not yet been merged to the
+   * main branch.
+   */
+  function migrate(max, anyOrder) {
     var conn = Bluebird.promisifyAll(mysql.createConnection(dbConfig));
 
     var migrationStarted = false;
@@ -153,7 +202,7 @@ function create(options) {
     .then(function(allExecuted) {
       var allFiles = _findMigrations();
       debug('found:     %s', allFiles.length);
-      return _filterMigrations(allExecuted, allFiles).slice(0, max);
+      return _filterMigrations(allExecuted, allFiles, anyOrder).slice(0, max);
     })
     .then(function(filesToBeExecuted) {
       var status = [];
