@@ -1,7 +1,7 @@
 language: node_js
 node_js:
   - "5.2.0"
-script: make coverage
+script: make ci
 env:
 services:
   - mysql

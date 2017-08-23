@@ -1,23 +1,9 @@
 {
-    "ecmaFeatures": {
-        "globalReturn": false,
-        "modules": false,
-        "jsx": false
-    },
-
-    "plugins": [
-    ],
-
-    "esnext": false,
-
     "env": {
         "browser": false,
         "es6": true,
         "amd": false,
         "mocha": true,
         "node": true
-    },
-
-    "globals": {
     }
 }

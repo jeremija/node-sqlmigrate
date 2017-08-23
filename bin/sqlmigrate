@@ -1,65 +1,128 @@
 #!/usr/bin/env node
-if (!process.env.DEBUG) process.env.DEBUG = 'sqlmigrate:*';
+if (!process.env.DEBUG) process.env.DEBUG = 'sqlmigrate:*'
 
-var error = require('debug')('sqlmigrate:error');
-var lib = require('../lib.js');
-var path = require('path');
+var Promise = require('bluebird')
+var assert = require('assert')
+var error = require('debug')('sqlmigrate:error')
+var fs = require('fs')
+var lib = require('../lib.js')
+var path = require('path')
 
-function start(args) {
-  if (args[0] === 'help' || args[0] === '--help') {
-    console.error('Usage: sqlmigrate [command]');
-    console.error('');
-    console.error('Migration will be performed when no command is specified.');
-    console.error('');
-    console.error('The default command accepts the following optional args:');
-    console.error('');
-    console.error('  --max=n      max number of migrations to perform');
-    console.error('  --any-order  do not fail if there are new migrations');
-    console.error('               created before the last executed migration');
-    console.error('');
-    console.error('Commands:');
-    console.error('  create       creates a migration');
-    console.error('  help         prints this help');
-    return;
-  }
-
-  try {
-    var config = require(path.join(process.cwd(), '.sqlmigrate'));
-  } catch (err) {
-    error('error reading configuration file');
-    error(err.stack);
-    process.exit(1);
-  }
-  var sqlmigrate = lib.create(config);
-
-  if (args[0] === 'create') {
-    var name = args[1];
-    sqlmigrate.createMigration(name);
-    return;
-  }
-
-  var parsedArgs = args.reduce(function(obj, arg) {
-    arg = arg.split('=');
-    var key = arg[0];
-    var value = arg[1];
-    key = key.replace(/^--/, '');
-    obj[key] = value;
-  }, {});
-
-  var errors = 0;
-  sqlmigrate.migrate(parsedArgs.max, 'any-order' in parsedArgs)
-  .catch(function(err) {
-    errors = 1;
-    error('an error occurred during the migration process');
-    error(err.stack);
-  })
-  .finally(function() {
-    setTimeout(function() {
-      process.exit(errors);
-    });
-  });
+var ARGS = {
+  'help': Boolean,
+  'create': Boolean,
+  'init': Boolean,
+  '--help': Boolean,
+  '--max': Number,
+  '--any-order': Boolean,
+  '--config': String,
+  '--name': String
 }
 
-var args = process.argv.slice(2);
-start(args);
+function parseArgs(args) {
+  return args.reduce(function(obj, arg) {
+    arg = arg.split('=')
+    var key = arg[0]
+    var value = arg[1]
+    var Constructor = ARGS[key]
+    assert.ok(Constructor, 'Unknown argument: ' + key)
+    key = key
+    .replace(/^--/, '')
+    .replace('-([a-z])', function(_, value) {
+      return value.toUpperCase()
+    })
+    obj[key] = Constructor === Boolean
+    ? true
+    : typeof value !== undefined ? Constructor(value) : undefined
+    return obj
+  }, {})
+}
 
+function getConfigFilePath(configFile) {
+  configFile = configFile || '.sqlmigrate'
+  if (!path.isAbsolute(configFile)) {
+    configFile = path.join(process.cwd(), configFile)
+  }
+  return configFile
+}
+
+function createConfigFile(configFile) {
+  configFile = getConfigFilePath(configFile)
+  if (fs.existsSync(configFile)) {
+    throw new Error('Aborting write, config file exists: ' + configFile)
+  }
+  error('Writing config file to', configFile)
+  fs.writeFileSync(
+    configFile,
+    JSON.stringify({
+      migrationsDir: 'migrations',
+      dbConfig: {
+        database: 'mydb',
+        host: '127.0.0.1',
+        port: 3306,
+        user: 'test',
+        password: 'test'
+      }
+    })
+  )
+}
+
+function readConfigFile(configFile) {
+  return require(getConfigFilePath(configFile))
+}
+
+function start(args) {
+  var parsedArgs = parseArgs(args)
+
+  if (parsedArgs.help) {
+    console.error('Usage: sqlmigrate [command]')
+    console.error('')
+    console.error('Migration will be performed when no command is specified.')
+    console.error('')
+    console.error('The default command accepts the following optional args:')
+    console.error('')
+    console.error('  --config=file  config file to use, default is .sqlmigrate')
+    console.error('  --max=n        max number of migrations to perform')
+    console.error('  --any-order    do not fail if there are new migrations')
+    console.error('                 created before the last executed migration')
+    console.error('')
+    console.error('Commands:')
+    console.error('  create [--name=string]  creates a migration')
+    console.error('  help                    prints this help')
+    console.error('  init                    initialize config file')
+    return 0
+  }
+
+  if (parsedArgs.init) {
+    createConfigFile(parsedArgs.config)
+    return 0
+  }
+
+  var config = readConfigFile(parsedArgs.config)
+  var sqlmigrate = lib.create(config)
+
+  if ('create' in parsedArgs) {
+    sqlmigrate.createMigration(parsedArgs.name || 'new-migration')
+    return 0
+  }
+
+  return sqlmigrate.migrate(parsedArgs.max, parsedArgs.anyOrder)
+  .then(function() {
+    return 0
+  })
+  .catch(function(err) {
+    error('Migration error. ' + err.stack)
+    return 1
+  })
+}
+
+if (require && require.main === module) {
+  var args = process.argv.slice(2)
+  Promise.resolve(start(args))
+  .then(process.exit)
+}
+
+module.exports = {
+  parseArgs: parseArgs,
+  start: start
+}

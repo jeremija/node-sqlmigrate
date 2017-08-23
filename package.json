@@ -7,7 +7,7 @@
   "description": "Helps automating MySQL migrations written in plain .sql scripts.",
   "main": "lib.js",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha --recursive test/"
   },
   "repository": {
     "type": "git",
@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "eslint": "^4.5.0",
     "istanbul": "^0.4.2",
     "mocha": "^2.4.5",
     "mysql": "^2.10.2"
