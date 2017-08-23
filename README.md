@@ -1,10 +1,14 @@
 # sqlmigrate
 
+[![Build Status](https://travis-ci.org/jeremija/node-sqlmigrate.svg?branch=master)](https://travis-ci.org/jeremija/node-sqlmigrate)
+
 Helps automating MySQL migrations written in plain `.sql` scripts.
 
-# usage
+**Note:** The CLI utility API has changed in v2.
 
-## as a library
+# Usage
+
+## Library
 
 ```javascript
 require('sqlmigrate').create({
@@ -20,7 +24,7 @@ require('sqlmigrate').create({
 .migrate();
 ```
 
-## as a cli utility
+## CLI
 
 `sqlmigrate` script will attempt to read the config file from the current
 working directory named `.sqlmigrate`:
@@ -39,11 +43,20 @@ module.exports = {
 };
 ```
 
+### Installation
+
 ```bash
 $ npm install sqlmigrate
 $ export PATH="$(PWD)/node_modules/.bin:$(PATH)"
 
-# help
+# or
+
+$ npm install -g sqlmigrate
+```
+
+### CLI help
+
+```bash
 $ sqlmigrate --help
 
 Usage: sqlmigrate [command]
@@ -52,29 +65,47 @@ Migration will be performed when no command is specified.
 
 The default command accepts the following optional args:
 
-  --max=n      max number of migrations to perform
-  --any-order  do not fail if there are new migrations
-               created before the last executed migration
+  --config=file  config file to use, default is .sqlmigrate
+  --max=n        max number of migrations to perform
+  --any-order    do not fail if there are new migrations
+                 created before the last executed migration
 
 Commands:
-  create       creates a migration
-  help         prints this help
+  create [--name=string]  creates a migration
+  help                    prints this help
+  init                    initialize config file
+```
 
-# create a new migration script
-$ sqlmigrate create 'new-migration'
+### Initize config
 
-# perform the migrations
-$ sqlmigrate
+```bash
+$ sqlmigrate init [--config=/path/to/file]
+```
 
-# perform the first 2 migrations
+### Creating a migration script
+
+```bash
+$ sqlmigrate create --name='new-migration' [--config=/path/to/file]
+```
+
+### Execute migrations
+
+```bash
+$ sqlmigrate [--config=/path/to/file]
+```
+
+### Execute first two migrations
+
+```bash
 $ sqlmigrate --max=2
+```
 
-# perform the migrations, ignoring the order of currently executed migrations
-# in the datababase
+### Perform the migrations, ignoring the order of currently executed migrations
 
+```bash
 $ sqlmigrate --any-order
 ```
 
-# license
+# License
 
-MIT
+[MIT](LICENSE)
