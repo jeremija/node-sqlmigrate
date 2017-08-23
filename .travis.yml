@@ -7,5 +7,6 @@ services:
   - mysql
 before_script:
   - mysql -e 'create database sqlmigrate_test;'
+  - mysql -e "grant all privileges on sqlmigrate_test.* to travis@'%';"
 notifications:
   email: false
