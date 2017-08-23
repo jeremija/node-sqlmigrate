@@ -59,7 +59,7 @@ $ npm install -g sqlmigrate
 ```bash
 $ sqlmigrate --help
 
-Usage: sqlmigrate [command]
+Usage: sqlmigrate [command] [args...]
 
 Migration will be performed when no command is specified.
 

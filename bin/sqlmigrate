@@ -75,7 +75,7 @@ function start(args) {
   var parsedArgs = parseArgs(args)
 
   if (parsedArgs.help) {
-    console.error('Usage: sqlmigrate [command]')
+    console.error('Usage: sqlmigrate [command] [args...]')
     console.error('')
     console.error('Migration will be performed when no command is specified.')
     console.error('')
