@@ -28,7 +28,7 @@ function parseArgs(args) {
     assert.ok(Constructor, 'Unknown argument: ' + key)
     key = key
     .replace(/^--/, '')
-    .replace('-([a-z])', function(_, value) {
+    .replace(/-([a-z])/, function(_, value) {
       return value.toUpperCase()
     })
     obj[key] = Constructor === Boolean
