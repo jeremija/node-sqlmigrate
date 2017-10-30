@@ -56,6 +56,7 @@ function createConfigFile(configFile) {
     configFile,
     JSON.stringify({
       migrationsDir: 'migrations',
+      driver: 'mysql',
       dbConfig: {
         database: 'mydb',
         host: '127.0.0.1',

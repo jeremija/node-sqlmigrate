@@ -43,6 +43,17 @@ module.exports = {
 };
 ```
 
+If `driver` property is specified in the config file, it can be used to select
+the database client. For example, this is how [mysql2][mysql2] can be used:
+
+```javascript
+module.exports = {
+  migrationsDir: 'src/db/migrations',
+  driver: 'mysql2',
+  dbConfig: {...}
+}
+```
+
 ### Installation
 
 ```bash
@@ -109,3 +120,5 @@ $ sqlmigrate --any-order
 # License
 
 [MIT](LICENSE)
+
+[mysql2]: https://www.npmjs.com/package/mysql2

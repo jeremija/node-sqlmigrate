@@ -18,13 +18,21 @@ function createConnection() {
   return Bluebird.promisifyAll(mysql.createConnection(dbConfig))
 }
 
-describe('lib', () => {
+const DRIVERS = [undefined, 'mysql2']
+
+DRIVERS.forEach(driver => {
+describe('lib (driver: ' + driver + ')', () => {
+
+  function _create(options) {
+    return lib.create(options)
+  }
+
   describe('create()', () => {
     it('should be a function', () => {
       expect(lib.create).to.be.a('function')
     })
     it('should return a new migrator instance', () => {
-      var migrator = lib.create({
+      var migrator = _create({
         dbConfig: dbConfig,
         migrationsDir: path.join(__dirname, 'migrations')
       })
@@ -38,7 +46,7 @@ describe('lib', () => {
     var migrator, migrationsDir = path.join(__dirname, '_migrations_')
 
     beforeEach(() => {
-      migrator = lib.create({
+      migrator = _create({
         dbConfig: dbConfig,
         migrationsDir: migrationsDir
       })
@@ -85,7 +93,7 @@ describe('lib', () => {
 
     beforeEach(() => {
       conn = createConnection()
-      migrator = lib.create({
+      migrator = _create({
         dbConfig: dbConfig,
         migrationsDir: migrationsDir
       })
@@ -147,7 +155,7 @@ describe('lib', () => {
     })
 
     function createMigrator(dir) {
-      return lib.create({
+      return _create({
         dbConfig: dbConfig,
         migrationsDir: path.join(__dirname, dir)
       })
@@ -241,7 +249,7 @@ describe('lib', () => {
     })
 
     it('fails when invalid db configuration', done => {
-      lib.create({
+      _create({
         dbConfig: {
           database: 'sqlmigrate_test_invalid',
           host: '127.0.0.1',
@@ -260,4 +268,5 @@ describe('lib', () => {
     })
 
   })
+})
 })

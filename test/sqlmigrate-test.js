@@ -53,6 +53,7 @@ describe('sqlmigrate', () => {
       const config = JSON.parse(fs.readFileSync(configFile))
       expect(config).to.eql({
         migrationsDir: 'migrations',
+        driver: 'mysql',
         dbConfig: {
           database: 'mydb',
           host: '127.0.0.1',

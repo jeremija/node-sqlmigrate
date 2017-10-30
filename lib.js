@@ -4,7 +4,6 @@ var Bluebird = require('bluebird')
 var debug = require('debug')('sqlmigrate:debug')
 var fs = require('fs')
 var mkdirp = require('mkdirp')
-var mysql = require('mysql')
 var path = require('path')
 var sha1 = require('sha1')
 
@@ -61,6 +60,10 @@ function parseDate(name) {
   return date
 }
 
+function _default(value, _def) {
+  return value || _def
+}
+
 /**
  * Creates a new migrator instance.
  * @param {Object} options                    configuration parameters
@@ -71,8 +74,9 @@ function parseDate(name) {
  */
 function create(options) {
   options.dbConfig.multipleStatements = true
-  var migrationsDir = options.migrationsDir || path.join('migrations')
+  var migrationsDir = _default(options.migrationsDir, 'migrations')
   var dbConfig = options.dbConfig
+  var mysql = require(_default(options.driver, 'mysql'))
 
   mkdirp.sync(migrationsDir)
 
