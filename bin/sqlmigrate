@@ -97,11 +97,7 @@ function start(args) {
   }
 
   if (parsedArgs.init) {
-    try {
-      createConfigFile(parsedArgs.config)
-    } catch (error) {
-      debug('config file exist')
-    }
+    createConfigFile(parsedArgs.config)
     return 0
   }
 
