@@ -4,6 +4,7 @@ if (!process.env.DEBUG) process.env.DEBUG = 'sqlmigrate:*'
 var Promise = require('bluebird')
 var assert = require('assert')
 var error = require('debug')('sqlmigrate:error')
+var debug = require('debug')('sqlmigrate:debug')
 var fs = require('fs')
 var lib = require('../lib.js')
 var path = require('path')
@@ -51,7 +52,7 @@ function createConfigFile(configFile) {
   if (fs.existsSync(configFile)) {
     throw new Error('Aborting write, config file exists: ' + configFile)
   }
-  error('Writing config file to', configFile)
+  debug('Writing config file to', configFile)
   fs.writeFileSync(
     configFile,
     JSON.stringify({
@@ -96,7 +97,11 @@ function start(args) {
   }
 
   if (parsedArgs.init) {
-    createConfigFile(parsedArgs.config)
+    try {
+      createConfigFile(parsedArgs.config)
+    } catch (error) {
+      debug('config file exist')
+    }
     return 0
   }
 
