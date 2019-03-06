@@ -77,6 +77,15 @@ function create(options) {
   var migrationsDir = _default(options.migrationsDir, 'migrations')
   var dbConfig = options.dbConfig
   var mysql = require(_default(options.driver, 'mysql'))
+  var migrationTable = _default(options.migrationTable, 'migrations')
+  
+  if (migrationTable !== 'migrations') {
+    UNLOCK_AFTER_MIGRATION = UNLOCK_AFTER_MIGRATION.replace('migrations', migrationTable)
+    INSERT_MIGRATION = INSERT_MIGRATION.replace('migrations', migrationTable)
+    FIND_EXISTING_MIGRATIONS = FIND_EXISTING_MIGRATIONS.replace('migrations', migrationTable)
+    CRATE_MIGRATIONS_TABLE = CRATE_MIGRATIONS_TABLE.replace('migrations', migrationTable) 
+    LOCK_FOR_MIGRATION = LOCK_FOR_MIGRATION.replace('migrations', migrationTable)
+  }
 
   mkdirp.sync(migrationsDir)
 

@@ -13,6 +13,7 @@ Helps automating MySQL migrations written in plain `.sql` scripts.
 ```javascript
 require('sqlmigrate').create({
   migrationsDir: 'db/migrations',
+  migrationTable: 'migrations',
   dbConfig: {
     database: 'sqlmigrate_test',
     host: '127.0.0.1',
@@ -33,6 +34,7 @@ working directory named `.sqlmigrate`:
 // .sqlmigrate example
 module.exports = {
   migrationsDir: 'src/db/migrations',
+  migrationTable: 'migrations_table',
   dbConfig: {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
